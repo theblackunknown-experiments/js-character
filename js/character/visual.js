@@ -1,68 +1,280 @@
+/*=========================================================================
+ CONSTANTS
+ =========================================================================*/
+const
+    canvasID = 'canvas',
+    canvasContext = '2d',
+    imagesPath = 'images/',
+    characterParts = [
+        'hair',
+        'head',
+        'torso',
+        'left-arm',
+        'left-arm-jump',
+        'right-arm',
+        'right-arm-jump',
+        'legs',
+        'legs-jump'
+    ];
 
-var images = {};
+/*=========================================================================
+ IMAGE LOADING
+ =========================================================================*/
+var
+    images = {};
 
-loadImage("left-arm");
-loadImage("right-arm");
-loadImage("torso");
-loadImage("legs");
-loadImage("head");
-loadImage("hair");
+//load all images
+characterParts.forEach(function(item) {
+    loadImage(item);
+});
 
+//Loader function, and hook to <img> tag
 function loadImage(name) {
     images[name] = new Image();
     images[name].onload = resourceLoaded;
-    images[name].src = "images/" + name + ".png";
+    images[name].src = imagesPath + name + '.png';
 }
 
+//Watcher for resources loading completion, and launch sprite animation runner
 var totalResources = 6;
 var numResourceLoaded = 0;
-var fps = 30;
+var fps = 45;
 
 function resourceLoaded() {
     numResourceLoaded += 1;
-    if( numResourceLoaded === totalResources) {
+    if (numResourceLoaded === totalResources) {
         setInterval(redraw, 1000 / fps);
     }
 }
 
-var context = document.getElementById("canvas").getContext("2d");
+/*=========================================================================
+ CANVAS MANIPULATION
+ =========================================================================*/
 
-var charX = 245;
-var charY = 185;
+//Canvas manipulation
+const
+    canvas = document
+        .getElementById(canvasID),
+    context = canvas
+        .getContext(canvasContext);
+//Character drawing - layer paradigm
+const
+    drawOrder = [
+        drawShadow,
+        drawLeftArm,
+        drawLegs,
+        drawTorso,
+        drawRightArm,
+        drawHead,
+        drawHair,
+        drawEyes
+    ];
+/*=========================================================================
+ BREATHE
+ =========================================================================*/
+const
+    BREATH_INCREMENTATION = 0.1,
+    BREATH_MAXIMUM = 2,
+    BREATH_IN = 1,
+    BREATH_OUT = -1,
+    BREATH_FPS = 1000 / fps;
+/*=========================================================================
+ BLINK
+ =========================================================================*/
+const
+    EYE_HEIGHT = 14,          //eye wide open's height
+    BLINK_REFRESH_TIME = 200, //time in milliseconds between successive blink refresh's status
+    BLINK_DELAY = 4000;       //time in milliseconds between successive blinks
+/*=========================================================================
+ CHARACTER STATE
+ =========================================================================*/
+var
+    character = {
+        position : {
+            x : 245,
+            y : 185
+        },
+        breath : {
+            direction : BREATH_IN,
+            amount : 0,
+            timer : setInterval(updateBreath, BREATH_FPS)
+        },
+        blink : {
+            eyesHeight : EYE_HEIGHT,
+            openTime : 0,
+            timer : setInterval(updateBlink, BLINK_REFRESH_TIME)
+        },
+        jump : {
+            active : false
+        }
+    };
 
-function redraw() {
-    var x = charX;
-    var y = charY;
-
-    canvas.width = canvas.width;//clears the canvas
-
-    //draw the shadow under
-    drawEllipse(x + 40, y + 29, 160, 6);
-
-    context.drawImage(images["left-arm"], x + 40, y - 42);
-    context.drawImage(images["legs"], x, y);
-    context.drawImage(images["torso"], x, y - 50);
-    context.drawImage(images["right-arm"], x - 15, y - 42);
-    context.drawImage(images["head"], x - 10, y - 125);
-    context.drawImage(images["hair"], x - 37, y - 138);
-
-    drawEllipse(x + 47, y - 68, 8, 14);
-    drawEllipse(x + 58, y - 68, 8, 14);
-
+//Breathe handler
+function updateBreath() {
+    var breathe = character.breath;
+    switch (breathe.direction) {
+        case BREATH_IN:
+            breathe.amount -= BREATH_INCREMENTATION;
+            if (breathe.amount < -BREATH_MAXIMUM) {
+                breathe.direction = BREATH_OUT;
+            }
+            break;
+        case BREATH_OUT:
+            breathe.amount += BREATH_INCREMENTATION;
+            if (breathe.amount > BREATH_MAXIMUM) {
+                breathe.direction = BREATH_IN;
+            }
+            break;
+    }
 }
 
+//Blink handler
+function updateBlink() {
+    var blinker = character.blink;
+    blinker.openTime += BLINK_REFRESH_TIME;
+    if (blinker.openTime >= BLINK_DELAY) {
+        blink();
+    }
+}
+
+const EYE_CLOSED = 0;
+function blink() {
+    var blinker = character.blink;
+    blinker.eyesHeight -= 1;
+    switch (blinker.eyesHeight) {
+        case EYE_CLOSED:
+            blinker.openTime = 0;
+            blinker.eyesHeight = EYE_HEIGHT;
+            break;
+        default:
+            setTimeout(blink, 10);
+    }
+}
+
+//Jump handler
+function jump() {
+    var jumper = character.jump;
+    if (!jumper.active) {
+        jump.active = true;
+        setTimeout(land, 500);
+    }
+}
+
+function land() {
+    var jumper = character.jump;
+    jump.active = false;
+}
+
+//Draw handler
+function redraw() {
+    //clears the canvas
+    canvas.width = canvas.width;
+
+    //Draw character
+    for (var i = 0; i < drawOrder.length; i++) {
+        drawOrder[i].call(this, character);
+    }
+}
+
+/**
+ * Draw the character's shadow
+ */
+function drawShadow(character) {
+    drawEllipse(
+        character.position.x + 40,
+        character.position.y + 29,
+        160 - character.breath.amount,
+        6
+    );
+}
+
+function drawLegs(character) {
+    context.drawImage(
+        images['legs'],
+        character.position.x,
+        character.position.y
+    );
+}
+
+function drawTorso(character) {
+    context.drawImage(
+        images['torso'],
+        character.position.x,
+        character.position.y - 50
+    );
+}
+
+function drawLeftArm(character) {
+    context.drawImage(
+        images['left-arm'],
+        character.position.x + 40,
+        character.position.y - 42 - character.breath.amount
+    );
+}
+
+function drawRightArm(character) {
+    context.drawImage(
+        images['right-arm'],
+        character.position.x - 15,
+        character.position.y - 42 - character.breath.amount
+    );
+}
+
+function drawHead(character) {
+    context.drawImage(
+        images['head'],
+        character.position.x - 10,
+        character.position.y - 125 - character.breath.amount
+    );
+}
+
+function drawHair(character) {
+    context.drawImage(
+        images['hair'],
+        character.position.x - 37,
+        character.position.y - 138 - character.breath.amount
+    );
+}
+
+function drawEyes(character) {
+    drawEllipse(
+        character.position.x + 47,
+        character.position.y - 68 - character.breath.amount,
+        8, character.blink.eyesHeight);
+    drawEllipse(
+        character.position.x + 58,
+        character.position.y - 68 - character.breath.amount,
+        8, character.blink.eyesHeight);
+}
+
+/**
+ * Utility function to draw an ellipse on a canvas
+ * Credit to : http://www.williammalone.com/briefs/how-to-draw-ellipse-html5-canvas/
+ * @param centerX - ellipse abscissa center
+ * @param centerY - ellipse ordinate center
+ * @param width - ellipse width
+ * @param height - ellipse height
+ */
 function drawEllipse(centerX, centerY, width, height) {
-  context.beginPath();
-  context.moveTo(centerX, centerY - height/2);
-  context.bezierCurveTo(
-    centerX + width/2, centerY - height/2,
-    centerX + width/2, centerY + height/2,
-    centerX, centerY + height/2);
-  context.bezierCurveTo(
-    centerX - width/2, centerY + height/2,
-    centerX - width/2, centerY - height/2,
-    centerX, centerY - height/2);
-  context.fillStyle = "black";
-  context.fill();
-  context.closePath();
+    //start a shape
+    context.beginPath();
+    //Set cursor a ellipse top center
+    context.moveTo(centerX, centerY - height / 2);
+    //right part
+    context.bezierCurveTo(
+        centerX + width / 2, centerY - height / 2,
+        centerX + width / 2, centerY + height / 2,
+        centerX, centerY + height / 2);
+    //left part
+    context.bezierCurveTo(
+        centerX - width / 2, centerY + height / 2,
+        centerX - width / 2, centerY - height / 2,
+        centerX, centerY - height / 2);
+    //Shape finition
+    //Filling color
+    context.fillStyle = "black";
+    //Fill action
+    context.fill();
+    //End a shape
+    context.closePath();
 }
