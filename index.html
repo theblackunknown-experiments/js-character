@@ -2,12 +2,26 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <title>Javascript Character</title>
+    <style>
+        .centered {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<canvas
-        id="canvas"
-        width="490" height="220"
-        onClick="jump()"></canvas>
+<div>
+    <canvas
+            id="canvas"
+            width="490" height="220"></canvas>
+    <div class="centered">
+        <button id="jumper">Jump !</button>
+    </div>
+</div>
 <script src="js/character/visual.js"></script>
+<script type="text/javascript">
+    document.getElementById("jumper").onmousedown = function() {
+        jump();
+    }
+</script>
 </body>
 </html>

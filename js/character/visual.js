@@ -36,7 +36,7 @@ function loadImage(name) {
 }
 
 //Watcher for resources loading completion, and launch sprite animation runner
-var totalResources = 6;
+const totalResources = characterParts.length;
 var numResourceLoaded = 0;
 var fps = 45;
 
@@ -85,6 +85,11 @@ const
     EYE_HEIGHT = 14,          //eye wide open's height
     BLINK_REFRESH_TIME = 200, //time in milliseconds between successive blink refresh's status
     BLINK_DELAY = 4000;       //time in milliseconds between successive blinks
+/*=========================================================================
+ JUMP
+ =========================================================================*/
+const
+    JUMP_HEIGHT = 45;
 /*=========================================================================
  CHARACTER STATE
  =========================================================================*/
@@ -153,16 +158,14 @@ function blink() {
 
 //Jump handler
 function jump() {
-    var jumper = character.jump;
-    if (!jumper.active) {
-        jump.active = true;
+    if (!character.jump.active) {
+        character.jump.active = true;
         setTimeout(land, 500);
     }
 }
 
 function land() {
-    var jumper = character.jump;
-    jump.active = false;
+    character.jump.active = false;
 }
 
 //Draw handler
@@ -180,71 +183,131 @@ function redraw() {
  * Draw the character's shadow
  */
 function drawShadow(character) {
-    drawEllipse(
-        character.position.x + 40,
-        character.position.y + 29,
-        160 - character.breath.amount,
-        6
-    );
+    if (character.jump.active) {
+        drawEllipse(
+            character.position.x + 40,
+            character.position.y + 29,
+            100 - character.breath.amount,
+            4);
+    } else {
+        drawEllipse(
+            character.position.x + 40,
+            character.position.y + 29,
+            160 - character.breath.amount,
+            6);
+    }
 }
 
 function drawLegs(character) {
-    context.drawImage(
-        images['legs'],
-        character.position.x,
-        character.position.y
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['legs-jump'],
+            character.position.x,
+            character.position.y - 6 - JUMP_HEIGHT
+        );
+    } else {
+        context.drawImage(
+            images['legs'],
+            character.position.x,
+            character.position.y
+        );
+    }
 }
 
 function drawTorso(character) {
-    context.drawImage(
-        images['torso'],
-        character.position.x,
-        character.position.y - 50
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['torso'],
+            character.position.x,
+            character.position.y - 50 - JUMP_HEIGHT);
+    } else {
+        context.drawImage(
+            images['torso'],
+            character.position.x,
+            character.position.y - 50);
+    }
 }
 
 function drawLeftArm(character) {
-    context.drawImage(
-        images['left-arm'],
-        character.position.x + 40,
-        character.position.y - 42 - character.breath.amount
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['left-arm-jump'],
+            character.position.x + 40,
+            character.position.y - 42 - character.breath.amount - JUMP_HEIGHT);
+    } else {
+        context.drawImage(
+            images['left-arm'],
+            character.position.x + 40,
+            character.position.y - 42 - character.breath.amount);
+    }
 }
 
 function drawRightArm(character) {
-    context.drawImage(
-        images['right-arm'],
-        character.position.x - 15,
-        character.position.y - 42 - character.breath.amount
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['right-arm-jump'],
+            character.position.x - 35,
+            character.position.y - 42 - character.breath.amount - JUMP_HEIGHT);
+    } else {
+        context.drawImage(
+            images['right-arm'],
+            character.position.x - 15,
+            character.position.y - 42 - character.breath.amount);
+    }
 }
 
 function drawHead(character) {
-    context.drawImage(
-        images['head'],
-        character.position.x - 10,
-        character.position.y - 125 - character.breath.amount
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['head'],
+            character.position.x - 10,
+            character.position.y - 125 - character.breath.amount - JUMP_HEIGHT
+        );
+    } else {
+        context.drawImage(
+            images['head'],
+            character.position.x - 10,
+            character.position.y - 125 - character.breath.amount
+        );
+    }
 }
 
 function drawHair(character) {
-    context.drawImage(
-        images['hair'],
-        character.position.x - 37,
-        character.position.y - 138 - character.breath.amount
-    );
+    if (character.jump.active) {
+        context.drawImage(
+            images['hair'],
+            character.position.x - 37,
+            character.position.y - 138 - character.breath.amount - JUMP_HEIGHT
+        );
+    } else {
+        context.drawImage(
+            images['hair'],
+            character.position.x - 37,
+            character.position.y - 138 - character.breath.amount
+        );
+    }
 }
 
 function drawEyes(character) {
-    drawEllipse(
-        character.position.x + 47,
-        character.position.y - 68 - character.breath.amount,
-        8, character.blink.eyesHeight);
-    drawEllipse(
-        character.position.x + 58,
-        character.position.y - 68 - character.breath.amount,
-        8, character.blink.eyesHeight);
+    if (character.jump.active) {
+        drawEllipse(
+            character.position.x + 47,
+            character.position.y - 68 - character.breath.amount - JUMP_HEIGHT,
+            8, character.blink.eyesHeight);
+        drawEllipse(
+            character.position.x + 58,
+            character.position.y - 68 - character.breath.amount - JUMP_HEIGHT,
+            8, character.blink.eyesHeight);
+    } else {
+        drawEllipse(
+            character.position.x + 47,
+            character.position.y - 68 - character.breath.amount,
+            8, character.blink.eyesHeight);
+        drawEllipse(
+            character.position.x + 58,
+            character.position.y - 68 - character.breath.amount,
+            8, character.blink.eyesHeight);
+    }
 }
 
 /**
