@@ -1,8 +1,7 @@
 /*=========================================================================
  CONSTANTS
  =========================================================================*/
-const
-    canvasID = 'canvas',
+const canvasID = 'canvas',
     canvasContext = '2d',
     imagesPath = 'images/',
     characterParts = [
@@ -20,8 +19,7 @@ const
 /*=========================================================================
  IMAGES
  =========================================================================*/
-var
-    images = {};
+var images = {};
 
 //load all images
 characterParts.forEach(function(item) {
