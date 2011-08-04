@@ -19,9 +19,10 @@
   */
  function characterGenerator(initialParameters) {
      
-     function required(predicate,reason) {
-         if(typeof predicate === 'undefined')
-            throw new Exception('Unsatisfied predicate : ' + reason);
+     function required(definedObject,reason) {
+         if(typeof definedObject === 'undefined')
+            throw new Exception('Non defined object - ' + reason);
+         return definedObject;
      }
     
     /**
@@ -35,15 +36,13 @@
             : expected;
     }
 
-
-
-
     return {
         //HELP (0,0) refers to a bottom left of a container
         position : {
            x : getOrElse(initialParameters.position.abscissa,0),
            y : getOrElse(initialParameters.position.ordinate,0),
-           layer : getOrElse(initialParameters.position.layer,0)
+           layer : required(initialParameters.position.layer,
+                    'A layer must be provided for the creation of a character)
         },
     }
  }
