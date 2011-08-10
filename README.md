@@ -6,6 +6,8 @@ Playground with HTML 5 Api, through application of various tutorials, libraries 
 TODO
 ----
 
+* Restrict possible action by handlers, or at least side-effect (state change, etc)
+
 * Add a breath in/out sound
 * Accelerate breath rate after a jump, decreasing logarithmically
 
