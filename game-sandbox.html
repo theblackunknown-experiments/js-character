@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Development Sandbox</title>
+</head>
+<body>
+
+	<script src="js/character/utilities.js"></script>
+	<script src="js/character/data.js"></script>
+	<script src="js/character/model.js"></script>
+	<script>
+		var parametersA = {
+				name : 'heroA',
+				position : {
+					x : 10,
+					y : 0,
+					layer : 1
+				},
+				type : gameData.CHARACTER_TYPES.HERO
+			},
+			parametersB = {
+				name : 'heroB',
+				position : {
+					x : 10,
+					y : 0,
+					layer : 1
+				},
+				type : gameData.CHARACTER_TYPES.HERO
+			},
+			heroA = characterModelGenerator(parametersA),
+			heroB = characterModelGenerator(parametersB),
+			probeEvent = function testEvent(copyReference){
+				console.log(
+					'Caller is ', copyReference.name
+				);
+			};
+
+		heroA.events.register(
+				gameData.EVENTS.BACK_TO_NORMAL,
+				probeEvent
+		);
+
+		heroA.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
+		heroB.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
+	</script>
+</body>
+</html>
