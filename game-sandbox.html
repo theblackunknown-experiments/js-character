@@ -29,18 +29,33 @@
 			},
 			heroA = characterModelGenerator(parametersA),
 			heroB = characterModelGenerator(parametersB),
-			probeEvent = function testEvent(copyReference){
+			probeEvent = function probe(copyReference){
 				console.log(
 					'Caller is ', copyReference.name
 				);
+			},
+			deplacementEvent = function deplacement(copyReference){
+				copyReference.position.y -= 15;
+			},
+			copyIsolationEvent = function copyIsolation(copyReference){
+				copyReference.condition.life -= 15;
 			};
 
 		heroA.events.register(
 				gameData.EVENTS.BACK_TO_NORMAL,
 				probeEvent
 		);
+		heroA.events.register(
+				gameData.EVENTS.JUMP,
+				deplacementEvent
+		);
+		heroA.events.register(
+				gameData.EVENTS.JUMP,
+				copyIsolationEvent
+		);
 
 		heroA.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
+		heroA.events.doEvent(gameData.EVENTS.JUMP);
 		heroB.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
 	</script>
 </body>

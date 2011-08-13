@@ -1,142 +1,151 @@
 /**
  * the intent in this file, is to centralize everything
- * related to character modelisation only,
+ * related to character model only,
  * no graphic rendering.
  *
  * subsections :
  *    - space position
  *    - health
  *    - state
- *    - interactions
+ *    - interevents
  */
 
-// ECMAScript 5 strict mode, function mode.
-'use strict';
-
-//FIXME Define a utilities namespace
-
-
-/**  */
 /**
  * Character's constructor,
  * data about character dimension will be provided later by graphics constructor
  * @param initialParameters -
- *     contains data about :
- *         //TODO information about the canvas size : tag's id selector ?
- *         where to place the character in the canvas
  *     {
- *      position : {
- *          abscissa : "integer" _character's start abscissa_,
- *          ordinate : "integer" _character's start ordinate_,
- *          layer : "integer" _character's start layer_
- *      }
+ *         name : {String} character name
+ *         position : {
+ *             abscissa : {Number} character's start abscissa,
+ *             ordinate : {Number}  character's start ordinate,
+ *             layer : {Number} character's start layer
+ *         },
+ *         type : {Number} character's type
  *     }
  */
-function characterDataGenerator(initialParameters) {
-
-	/**
-	 * collections of function that are launch when a specific actions is triggered
-	 * index : action's code
-	 * value : array (behaving like a queue) of handler
-	 */
-	//TODO Some default handler may be required ?
-	var actionsHandlers = initializeActionsHandlers();
+function characterModelGenerator(initialParameters) {
+	'use strict';
 
 	/**
 	 * Simple initialize function,
-	 * create the described structure above based on ACTION constant object
+	 * create the described structure above based on game's events
 	 */
-	function initializeActionsHandlers() {
-		var handlers = [];
-		for each (var actionCode in gameData.ACTION) {
-			handlers[actionCode] = [];
+	function initializeEventsHandlers() {
+		var handlers = [],
+			eventCode;
+		for (eventCode in gameData.EVENTS) {
+			handlers[gameData.EVENTS[eventCode]] = [];
 		}
+
 		return handlers;
 	}
 
+	var defaults = {
+			position : {
+				x : 0,
+				y : 0
+			},
+			condition : {
+				life : 100
+			}
+		},
+		character = {
+			name : gameUtilities.required(initialParameters.name,
+						'A name must be provided for the creation of a character'),
+			type : gameUtilities.required(initialParameters.type,
+						'A character\'s type must be provided for the creation of a character'),
+			position : {
+				x : gameUtilities.getOrElse(initialParameters.position.x, defaults.position.x),
+				y : gameUtilities.getOrElse(initialParameters.position.y, defaults.position.y),
+				layer : gameUtilities.required(initialParameters.position.layer,
+						'A layer must be provided for the creation of a character')
+			},
+			condition : {
+				life : defaults.condition.life,
+				state : gameData.CHARACTER_STATES.NORMAL
+			},
+			inventory : {
+				leftHand : gameData.ITEMS.NOTHING,
+				rightHand : gameData.ITEMS.NOTHING,
+				magic : gameData.SPELLS.NONE
+			},
+			events : {
+				doEvent : triggerEvent,
+				register : registerEventHandler,
+				unregister : unregisterEventHandler
+			}
+		},
+		eventHandlers = initializeEventsHandlers();
+
 	/**
-	 * Trigger the specified action and thus the handler's queue
-	 * @param {Number} action - target action to be triggered
-	 *
+	 * Trigger the specified event and thus the handler's queue
+	 * @param {Number} event - target event to be triggered
 	 */
-	function triggerAction(action) {
-		var cursor,
-			specificActionHandlers = actionsHandlers[action];
+	function triggerEvent(event) {
+		var cursor, length,
+			specificEventHandlers = eventHandlers[event],
+			//TODO Make an inline copy of only necessary data
+			characterCopy = Object.clone(character);
 
 		//checking
-		gameUtilities.required(action, 'Target action not specified');
-		if (!gameData.checker.isAction(action))
-			throw new Exception('Given action is not a valid action : ' + action);
+		if (!gameData.checker.isEvent(event)) {
+			throw new TypeError('Given event is not a valid event : ' + event);
+		}
 
-		//TODO More attention required by handler-side effect, for example character's state change
-		for (cursor = 0; cursor < specificActionHandlers.length; cursor++)
-			specificActionHandlers[cursor]();
+		for (cursor = 0, length = specificEventHandlers.length; cursor < length; cursor++) {
+			specificEventHandlers[cursor](characterCopy);
+			//TODO More attention required by handler-side effect, for example character's state change
+			//TODO Computation : State resolution, Life decreasing, etc...
+			//TODO Quick-end if character died
+		}
 	}
 
 	/**
-	 * Register an handler to a specific action,
+	 * Register an handler to a specific event,
 	 * the handler will be queued, if not already present, to the existing list of handler
-	 * @param {Number} action - trigger action
+	 * @param {Number} event - trigger event
 	 * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
 	 */
-	function registerActionHandler(action, handler) {
+	function registerEventHandler(event, handler) {
 		//checking
-		gameUtilities.required(action, 'Target action not specified');
-		gameUtilities.required(handler, 'Action\'s handler not specified');
-		if (!gameData.checker.isAction(action))
-			throw new Exception('Given action is not a valid action : ' + action);
-		if (!gameData.checker.isHandler(handler))
-			throw new Exception('Given handler is not a valid handler : ' + handler);
+		gameUtilities.required(event, 'Target event not specified');
+		gameUtilities.required(handler, 'Event\'s handler not specified');
+		if (!gameData.checker.isEvent(event)) {
+			throw new TypeError('Given event is not a valid event : ' + event);
+		}
+		if (!gameData.checker.isHandler(handler)) {
+			throw new TypeError('Given handler is not a valid handler : ' + handler);
+		}
 
-		var targetedActionHandlers = actionsHandlers[action];
-		if (!targetedActionHandlers.contains(handler)) {
-			targetedActionHandlers.push(handler);
+		var targetedEventHandlers = eventHandlers[event];
+		if (!targetedEventHandlers.contains(handler)) {
+			targetedEventHandlers.push(handler);
 		}
 	}
 
 	/**
-	 * Unregister an handler from a specific action,
+	 * Unregister an handler from a specific event,
 	 * the handler will be queued, if not already present, to the existing list of handler
-	 * @param {Number} action - trigger action
+	 * @param {Number} event - trigger event
 	 * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
 	 */
-	function unregisterActionHandler(action, handler) {
+	function unregisterEventHandler(event, handler) {
 		//checking
-		gameUtilities.required(action, 'Target action not specified');
-		gameUtilities.required(handler, 'Action\'s handler not specified');
-		if (!gameData.checker.isAction(action))
-			throw new Exception('Given action is not a valid action : ' + action);
-		if (!gameData.checker.isHandler(handler))
-			throw new Exception('Given handler is not a valid handler : ' + handler);
+		gameUtilities.required(event, 'Target event not specified');
+		gameUtilities.required(handler, 'Event\'s handler not specified');
+		if (!gameData.checker.isEvent(event)) {
+			throw new TypeError('Given event is not a valid event : ' + event);
+		}
+		if (!gameData.checker.isHandler(handler)) {
+			throw new TypeError('Given handler is not a valid handler : ' + handler);
+		}
 
-		var targetedActionHandlers = actionsHandlers[action];
-		if (targetedActionHandlers.contains(handler)) {
-			targetedActionHandlers.remove(handler);
+		var targetedEventHandlers = eventHandlers[event];
+		if (targetedEventHandlers.contains(handler)) {
+			targetedEventHandlers.remove(handler);
 		}
 	}
 
-	return {
-		type : gameData.CHARACTER_TYPE.HERO,
-		//HELP (0,0) refers to a bottom left of a container
-		position : {
-			x : gameUtilities.getOrElse(initialParameters.position.abscissa, 0),
-			y : gameUtilities.getOrElse(initialParameters.position.ordinate, 0),
-			layer : gameUtilities.required(initialParameters.position.layer,
-					'A layer must be provided for the creation of a character')
-		},
-		condition : {
-			life : 100,
-			state : gameData.STATE.NORMAL
-		},
-		inventory : {
-			leftHand : gameData.ITEM.NOTHING,
-			rightHand : gameData.ITEM.NOTHING,
-			magic : gameData.SPELL.NONE
-		},
-		actions : {
-			doAction : triggerAction,
-			register : registerActionHandler,
-			unregister : unregisterActionHandler
-		}
-	};
+	return character;
 }

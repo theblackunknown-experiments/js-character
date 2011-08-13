@@ -9,21 +9,21 @@ var gameData = (function gameSpecificData() {
 	/**
 	 * Existing items
 	 */
-	const ITEM = {
+	var gameItems = {
 		NOTHING : 0
 	};
 
 	/**
 	 * Existing spells
 	 */
-	const SPELL = {
+	var gameSpells = {
 		NONE : 0
 	};
 
 	/**
 	 * Possible states
 	 */
-	const STATE = {
+	var characterStates = {
 		NORMAL : 0,
 		MOVING : 1
 	};
@@ -31,68 +31,70 @@ var gameData = (function gameSpecificData() {
 	/**
 	 * Character Types
 	 */
-	const CHARACTER_TYPE = {
+	var characterTypes = {
 		HERO : 1
 	};
 
 	/**
 	 * Possible actions
 	 */
-	const ACTION = {
+	var characterEvents = {
 		BACK_TO_NORMAL : 0,
 		MOVE_RIGHT : 1,
 		MOVE_LEFT : 2,
 		MOVE_BACKGROUND : 3,
-		MOVE_FOREGROUND : 4
+		MOVE_FOREGROUND : 4,
+		JUMP : 5
 	};
 
 
-	function checkHandler(expectedHandler) {
-		if (typeof expectedHandler !== 'function')
-			throw new Exception('Given handler is not a function : ' + (typeof expectedHandler));
+	function isHandler(expectedHandler) {
+		return typeof expectedHandler == 'function';
 	}
 
 	function isSpecificData(data, expected) {
-		for each (var code in data)
-			if (code === expected)
+		for (var code in data) {
+			if (data[code] === expected) {
 				return true;
+			}
+		}
 		return false;
 	}
 
 	function isItem(expectedItem) {
-		return isSpecificData(ITEM, expectedItem);
+		return isSpecificData(gameItems, expectedItem);
 	}
 
 	function isSpell(expectedSpell) {
-		return isSpecificData(SPELL, expectedSpell);
+		return isSpecificData(gameSpells, expectedSpell);
 	}
 
-	function isState(expectedState) {
-		return isSpecificData(STATE, expectedState);
+	function isCharacterState(expectedState) {
+		return isSpecificData(characterStates, expectedState);
 	}
 
 	function isCharacterType(expectedCharacterType) {
-		return isSpecificData(CHARACTER_TYPE, expectedCharacterType);
+		return isSpecificData(characterTypes, expectedCharacterType);
 	}
 
-	function isAction(expectedAction) {
-		return isSpecificData(ACTION, expectedAction);
+	function isEvent(expectedEvent) {
+		return isSpecificData(characterEvents, expectedEvent);
 	}
 
-	return {
-		ITEM : ITEM,
-		SPELL : SPELL,
-		STATE : STATE,
-		CHARACTER_TYPE : CHARACTER_TYPE,
-		ACTION : ACTION,
-		checker : {
-			isHandler : checkHandler,
+	return Object.freeze({
+		ITEMS : gameItems,
+		SPELLS : gameSpells,
+		CHARACTER_STATES : characterStates,
+		CHARACTER_TYPES : characterTypes,
+		EVENTS : characterEvents,
+		checker : Object.freeze({
+			isHandler : isHandler,
 			isItem : isItem,
 			isSpell : isSpell,
-			isState : isState,
+			isCharacterState : isCharacterState,
 			isCharacterType : isCharacterType,
-			isAction : isAction
-		}
-	};
+			isEvent : isEvent
+		})
+	});
 
 }());
