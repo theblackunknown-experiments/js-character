@@ -10,7 +10,7 @@ var gameData = (function gameSpecificData() {
 	 * Existing items
 	 */
 	var gameItems = {
-		NOTHING : 0
+		NONE : 0
 	};
 
 	/**
@@ -24,6 +24,7 @@ var gameData = (function gameSpecificData() {
 	 * Possible states
 	 */
 	var characterStates = {
+		DEAD : -1,
 		NORMAL : 0,
 		MOVING : 1
 	};

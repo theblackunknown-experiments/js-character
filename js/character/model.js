@@ -7,7 +7,7 @@
  *    - space position
  *    - health
  *    - state
- *    - interevents
+ *    - events
  */
 
 /**
@@ -66,12 +66,12 @@ function characterModelGenerator(initialParameters) {
 				state : gameData.CHARACTER_STATES.NORMAL
 			},
 			inventory : {
-				leftHand : gameData.ITEMS.NOTHING,
-				rightHand : gameData.ITEMS.NOTHING,
+				leftHand : gameData.ITEMS.NONE,
+				rightHand : gameData.ITEMS.NONE,
 				magic : gameData.SPELLS.NONE
 			},
 			events : {
-				doEvent : triggerEvent,
+				doEvent : handleEvent,
 				register : registerEventHandler,
 				unregister : unregisterEventHandler
 			}
@@ -79,14 +79,104 @@ function characterModelGenerator(initialParameters) {
 		eventHandlers = initializeEventsHandlers();
 
 	/**
-	 * Trigger the specified event and thus the handler's queue
-	 * @param {Number} event - target event to be triggered
+	 * Handle the specified event and thus execute the handler's queue
+	 * @param {Number} event - target event to be handled
 	 */
-	function triggerEvent(event) {
+	function handleEvent(event) {
 		var cursor, length,
 			specificEventHandlers = eventHandlers[event],
-			//TODO Make an inline copy of only necessary data
-			characterCopy = Object.clone(character);
+			characterCopy;
+
+        /**
+         * Compute change only if values differ
+         * @param former - previous property's value
+         * @param latter - new property's value
+         * @param computation - optional complex computation, or simple assignment if none provided
+         */
+        function computeChange(former, latter, computation) {
+            var realComputation = computation || function simpleAssignment(newValue) {
+                return newValue;
+            };
+            if(latter !== undefined) {
+                if( former !== latter && getTypeOf(former) === getTypeOf(latter) ) {
+                    return realComputation(latter);
+                }
+            }
+            return former;
+        }
+
+        /**
+         * Compute position changes,
+         * COLLISIONS ARE RESOLVED BY GAME ENGINE
+         */
+        function computePositionChanges(former,latter) {
+            if (latter === undefined) {
+                return former;
+            } else {
+                return {
+                    x : computeChange(former.x, latter.x),
+                    y : computeChange(former.y, latter.y),
+                    layer : computeChange(former.layer, latter.layer)
+                };
+            }
+        }
+
+        /**
+         * Compute condition changes
+         */
+        function computeConditionChanges(former,latter) {
+            if (latter === undefined) {
+                return former;
+            } else {
+                return {
+                    life : computeChange(former.life, latter.life, function lifeDecrease(lifeValue){
+                        return (lifeValue < 0)
+                            ? 0
+                            : lifeValue;
+                    }),
+                    state : computeChange(former.state, latter.state, function stateChange(newState){
+                        return gameData.checker.isCharacterState(newState)
+                            ? newState
+                            : gameData.CHARACTER_STATES.BACK_TO_NORMAL;
+                    })
+                };
+            }
+        }
+
+        /**
+         * Compute inventory changes
+         */
+        function computeInventoryChanges(former,latter) {
+
+            function handChange(newHandItem) {
+                return gameData.checker.isItem(newHandItem)
+                    ? newHandItem
+                    : gameData.ITEMS.NONE;
+            }
+
+            if (latter === undefined) {
+                return former;
+            } else {
+                return {
+                    leftHand : computeChange(former.leftHand, latter.leftHand, handChange),
+                    rightHand : computeChange(former.rightHand, latter.rightHand, handChange),
+                    magic : computeChange(former.magic, latter.magic, function spellChange(newSpell){
+                        return gameData.checker.isSpell(newSpell)
+                            ? newSpell
+                            : gameData.SPELLS.NONE;
+                    })
+                };
+            }
+        }
+
+        /**
+         * Check if given character is still alive
+         */
+        function alive(characterReference) {
+            var characterCondition = characterReference.condition;
+            return characterCondition.state != gameData.CHARACTER_STATES.DEAD
+                && characterCondition.life > 0;
+        }
 
 		//checking
 		if (!gameData.checker.isEvent(event)) {
@@ -94,10 +184,35 @@ function characterModelGenerator(initialParameters) {
 		}
 
 		for (cursor = 0, length = specificEventHandlers.length; cursor < length; cursor++) {
+            //dump real character
+            characterCopy = {
+                name : character.name,
+                type : character.type,
+                position : {
+                    x : character.position.x,
+                    y : character.position.y,
+                    layer : character.position.layer
+                },
+                condition : {
+                    life : character.condition.life,
+                    state : character.condition.state
+                },
+                inventory : {
+                    leftHand : character.inventory.leftHand,
+                    rightHand : character.inventory.rightHand,
+                    magic : character.inventory.magic
+                }
+            };
+            //pass it to handler
 			specificEventHandlers[cursor](characterCopy);
-			//TODO More attention required by handler-side effect, for example character's state change
-			//TODO Computation : State resolution, Life decreasing, etc...
-			//TODO Quick-end if character died
+            //compute differences
+            character.position = computePositionChanges(character.position,characterCopy.position);
+            character.condition = computeConditionChanges(character.condition,characterCopy.condition);
+            character.inventory = computeInventoryChanges(character.inventory,characterCopy.inventory);
+
+            //TODO Resolved here or by game engine ?
+            if (!alive(character))
+                break;
 		}
 	}
 

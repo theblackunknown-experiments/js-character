@@ -20,34 +20,44 @@ var gameUtilities = (function generalUtilities() {
 	Array.prototype.remove = function arrayRemove(e) {
 		var index;
 		if ((index = this.indexOf(e)) > -1) {
-			return [].splice.call(this, index, 1);
+			return Array.prototype.splice.call(this, index, 1);
 		} else {
 			return null;
 		}
 	};
 
-	Object.prototype.getType =	function getType() {
-		var typeExtraction = /^\[\w+\s(\w+)\]$/,
-			instanceDescription = Object.prototype.toString.call(this);
-		if( typeExtraction.test(instanceDescription) ) {
-			return typeExtraction.exec(instanceDescription)[1];
-		} else {
-			return 'undefined';
-		}
-	};
+	function getType(caller) {
+		var that = caller || this,
+            typeExtraction = /^\[\w+\s(\w+)\]$/,
+			instanceDescription = Object.prototype.toString.call(that);
+        switch(typeof that){
+            case 'object':
+                if( typeExtraction.test(instanceDescription) ) {
+                    return (typeExtraction.exec(instanceDescription)[1]).toLowerCase();
+                } else {
+                    return 'undefined';
+                }
+            default :
+                return typeof that;
+        }
+
+	}
+
+    Object.prototype.getType = getType;
+    window.getTypeOf = getType;
 
 	Object.clone =	function clone2(o) {
 		var a;
 		switch(o.getType()) {
-			case 'Date':
+			case 'date':
 				return new Date(o.getTime());
-			case 'Array':
+			case 'array':
 				a = [];
 				break;
-			case 'Object':
+			case 'object':
 				a = {};
 				break;
-			case 'Function':
+			case 'function':
 			default:
 				return o;
 		}

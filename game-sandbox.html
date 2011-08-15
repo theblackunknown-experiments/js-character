@@ -4,7 +4,11 @@
 	<title>Development Sandbox</title>
 </head>
 <body>
-
+    <canvas id="game-playground">
+		<p>
+			Your browser does not support canvas feature, please use a more recent browser
+		</p>
+    </canvas>
 	<script src="js/character/utilities.js"></script>
 	<script src="js/character/data.js"></script>
 	<script src="js/character/model.js"></script>
@@ -34,7 +38,7 @@
 					'Caller is ', copyReference.name
 				);
 			},
-			deplacementEvent = function deplacement(copyReference){
+			moveEvent = function move(copyReference){
 				copyReference.position.y -= 15;
 			},
 			copyIsolationEvent = function copyIsolation(copyReference){
@@ -47,7 +51,7 @@
 		);
 		heroA.events.register(
 				gameData.EVENTS.JUMP,
-				deplacementEvent
+				moveEvent
 		);
 		heroA.events.register(
 				gameData.EVENTS.JUMP,
