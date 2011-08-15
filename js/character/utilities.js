@@ -94,8 +94,9 @@ var gameUtilities = (function generalUtilities() {
 				: expected;
 	}
 
-	return {
+	return Object.freeze({
 		required : required,
-		getOrElse : getOrElse
-	};
+		getOrElse : getOrElse,
+		nullFunction : function (){}
+	});
 }());
