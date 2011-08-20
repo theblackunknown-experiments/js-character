@@ -24,9 +24,13 @@ var gameData = (function gameSpecificData() {
 	 * Possible states
 	 */
 	var characterStates = {
-		DEAD : -1,
-		NORMAL : 0,
-		MOVING : 1
+		DEAD : 0,
+		STANDING_RIGHT : 1,
+		MOVING_RIGHT : 2,
+		JUMPING_RIGHT : 3,
+		STANDING_LEFT : -1,
+                MOVING_LEFT : -2,
+                JUMPING_LEFT : -3
 	};
 
 	/**
@@ -40,12 +44,13 @@ var gameData = (function gameSpecificData() {
 	 * Possible actions
 	 */
 	var characterEvents = {
-		BACK_TO_NORMAL : 0,
-		MOVE_RIGHT : 1,
-		MOVE_LEFT : 2,
-		MOVE_BACKGROUND : 3,
-		MOVE_FOREGROUND : 4,
-		JUMP : 5
+		DEAD : 0,
+		STANDING_RIGHT : 1,
+		MOVING_RIGHT : 2,
+		JUMPING_RIGHT : 3,
+		STANDING_LEFT : -1,
+                MOVING_LEFT : -2,
+                JUMPING_LEFT : -3
 	};
 
 
