@@ -224,7 +224,7 @@ function characterModelGenerator(initialParameters) {
 	 */
 	function registerEventHandler(event, handler) {
 		//checking
-		gameUtilities.required(event, 'Target event not specified');
+		gameUtilities.required(event, 'Targeted event not specified : ' + event);
 		gameUtilities.required(handler, 'Event\'s handler not specified');
 		if (!gameData.checker.isEvent(event)) {
 			throw new TypeError('Given event is not a valid event : ' + event);
@@ -247,7 +247,7 @@ function characterModelGenerator(initialParameters) {
 	 */
 	function unregisterEventHandler(event, handler) {
 		//checking
-		gameUtilities.required(event, 'Target event not specified');
+		gameUtilities.required(event, 'Targeted event not specified : ' + event);
 		gameUtilities.required(handler, 'Event\'s handler not specified');
 		if (!gameData.checker.isEvent(event)) {
 			throw new TypeError('Given event is not a valid event : ' + event);
