@@ -1,111 +1,165 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Development Sandbox</title>
-</head>
-<body>
-    <canvas id="game-playground" width="800" height="600">
-		<p>
-			Your browser does not support canvas feature, please use a more recent browser
-		</p>
-    </canvas>
-	<script src="js/character/utilities.js"></script>
-	<script src="js/character/data.js"></script>
-	<script src="js/character/model.js"></script>
-	<script src="js/character/graphic.js"></script>
-	<script src="js/character/engine.js"></script>
-	<script>
-		var parametersMario = {
-				name : 'mario',
-				position : {
-					x : 10,
-					y : 0,
-					layer : 1
-				},
-				type : gameData.CHARACTER_TYPES.HERO
-			},
-			parametersLink = {
-				name : 'link',
-				position : {
-					x : 10,
-					y : 0,
-					layer : 1
-				},
-				type : gameData.CHARACTER_TYPES.HERO
-			},
-			mario = characterModelGenerator(parametersMario),
-			link = characterModelGenerator(parametersLink),
-			probeEvent = function probe(copyReference){
-				console.log(
-					'Caller is ', copyReference.name
-				);
-			},
-			moveEvent = function move(copyReference){
-				copyReference.position.y -= 15;
-			},
-			copyIsolationEvent = function copyIsolation(copyReference){
-				copyReference.condition.life -= 15;
-			},
-			marioSpriteMap = 'images/mario-sprites-map',
-			marioMapLocations = {
-				BACK_TO_NORMAL : {
-			    	spriteType : 'sequence',
-					sequence : []
-				}
-			},
-			indexAbscissa,
-			indexOrdinate,
-			imageSegment,
-			ctx = document.getElementById('game-playground').getContext('2d');
-
-		for (indexAbscissa = 7; indexAbscissa >=0; indexAbscissa--) {
-			for (indexOrdinate = 1; indexOrdinate >=0; indexOrdinate--) {
-				marioMapLocations.BACK_TO_NORMAL.sequence.push({
-					x : indexAbscissa * 16,
-					y : indexOrdinate * 28,
-					width : 16,
-					height : 28
-				});
-			}
-		}
-
-		mario.events.register(
-				gameData.EVENTS.BACK_TO_NORMAL,
-				probeEvent
-		);
-		mario.events.register(
-				gameData.EVENTS.JUMP,
-				moveEvent
-		);
-		mario.events.register(
-				gameData.EVENTS.JUMP,
-				copyIsolationEvent
-		);
-
-		mario.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
-		mario.events.doEvent(gameData.EVENTS.JUMP);
-		link.events.doEvent(gameData.EVENTS.BACK_TO_NORMAL);
-
-                var spriteMap = new Image();
-                spriteMap.onload = function () {
-                    console.log('Section : ', marioMapLocations.BACK_TO_NORMAL);
-                    for (
-                    indexAbscissa = marioMapLocations.BACK_TO_NORMAL.sequence.length - 1;
-                    indexAbscissa >= 0 ;
-                    indexAbscissa--)
-                    {
-                        console.log('Index : ', indexAbscissa);
-                        console.log('Segment : ', marioMapLocations.BACK_TO_NORMAL.sequence[indexAbscissa]);
-                        console.log('Image : ', spriteMap);
-                        imageSegment = marioMapLocations.BACK_TO_NORMAL.sequence[indexAbscissa];
-                        //ctx.drawImage(spriteMap, imageSegment.x, imageSegment.y, imageSegment.width, imageSegment.height, imageSegment.x, imageSegment.y, indexAbscissa + 10, 10);
-                        var abscissa = imageSegment.x,
-                            ordinate = imageSegment.y;
-                        ctx.drawImage(spriteMap, abscissa, ordinate,16,28,indexAbscissa * 100, ordinate, 32,56);
-                    }
+    <head>
+        <title>Development Sandbox</title>
+    </head>
+    <body>
+        <canvas id="game-playground" width="800" height="600">
+            <p>
+            Your browser does not support canvas feature, please use a more recent browser
+            </p>
+        </canvas>
+        <script src="js/character/utilities.js"></script>
+        <script src="js/character/data.js"></script>
+        <script src="js/character/model.js"></script>
+        <script src="js/character/graphic.js"></script>
+        <script src="js/character/engine.js"></script>
+        <script>
+            var parametersMario = {
+                name : 'mario',
+                position : {
+                    x : 10,
+                    y : 0,
+                    layer : 1
+                },
+                type : gameData.CHARACTER_TYPES.HERO
+            },
+            parametersLink = {
+                name : 'link',
+                position : {
+                    x : 10,
+                    y : 0,
+                    layer : 1
+                },
+                type : gameData.CHARACTER_TYPES.HERO
+            },
+            mario,
+            link,
+            probeEvent = function probe(copyReference){
+                console.log(
+                'Caller is ', copyReference.name
+                );
+            },
+            moveEvent = function move(copyReference){
+                copyReference.position.y -= 15;
+            },
+            copyIsolationEvent = function copyIsolation(copyReference){
+                copyReference.condition.life -= 15;
+            },
+            marioSpriteMapPath = 'images/mario-sprites-map',
+            marioMapLocations = {
+                STANDING_RIGHT : {
+                    spriteType : 'sequence',
+                    sequence : []
                 }
-                spriteMap.src = "images/mario-sprites-map.png";
+            },
+            indexAbscissa,
+            indexOrdinate,
+            imageSegment,
+            ctx = document.getElementById('game-playground').getContext('2d');
 
-	</script>
-</body>
+            var marioImages = [],
+            imageDimension = {
+                width : 128,
+                height : 56,
+            },
+            spriteDimension = {
+                width : 16,
+                height : 28
+            };
+            //create mario sprite map slicing
+            for (indexOrdinate = 0;
+                indexOrdinate < (imageDimension.height / spriteDimension.height);
+                indexOrdinate++) {
+                for (indexAbscissa = 0;
+                    indexAbscissa < (imageDimension.width / spriteDimension.width);
+                    indexAbscissa++) {
+                    marioImages.push({
+                        type : 'single',
+                        x : indexAbscissa * spriteDimension.width,
+                        y : indexOrdinate * spriteDimension.height,
+                        width : spriteDimension.width,
+                        height : spriteDimension.height
+                    });
+                }
+            }
+
+            var marioSpriteMapPath = 'images/mario-sprites-map.png',
+            marioSlicing = {
+                DEAD : marioImages[6],
+                STANDING_RIGHT : marioImages[0],
+                MOVING_RIGHT : {
+                    type : 'sequence',
+                    sequence : [
+                    marioImages[1],
+                    marioImages[2],
+                    marioImages[3],
+                    marioImages[4]
+                    ]
+                },
+                JUMPING_RIGHT : marioImages[5],
+                STANDING_LEFT : marioImages[8],
+                MOVING_LEFT : {
+                    type : 'sequence',
+                    sequence : [
+                    marioImages[9],
+                    marioImages[10],
+                    marioImages[11],
+                    marioImages[12]
+                    ]
+                },
+                JUMPING_LEFT : marioImages[13]
+            };
+
+            var mario = characterModelGenerator(parametersMario),
+            visualMario = characterVisualGenerator(
+            mario,
+            marioSpriteMapPath,
+            marioSlicing
+            );
+
+            function drawMario() {
+                console.log('Section : ', marioMapLocations.STANDING_RIGHT);
+                for (
+                indexAbscissa = marioMapLocations.STANDING_RIGHT.sequence.length - 1;
+                indexAbscissa >= 0 ;
+                indexAbscissa--)
+                {
+                    console.log('Index : ', indexAbscissa);
+                    console.log('Segment : ', marioMapLocations.STANDING_RIGHT.sequence[indexAbscissa]);
+                    console.log('Image : ', marioMapImage);
+                    imageSegment = marioMapLocations.STANDING_RIGHT.sequence[indexAbscissa];
+                    //ctx.drawImage(marioMapImage, imageSegment.x, imageSegment.y, imageSegment.width, imageSegment.height, imageSegment.x, imageSegment.y, indexAbscissa + 10, 10);
+                    var abscissa = imageSegment.x,
+                    ordinate = imageSegment.y;
+                    ctx.drawImage(marioMapImage, abscissa, ordinate,16,28,indexAbscissa * 100, ordinate, 32,56);
+                }
+            }
+
+            //load sprite map
+            var marioMapImage = new Image();
+            //marioMapImage.onload = drawMario;
+            marioMapImage.src = marioSpriteMapPath;
+
+            //register some handlers 
+            //FIXME That design is sooooooooo bad !!!
+            mario.events.register(
+                gameData.EVENTS.STANDING_RIGHT,
+                probeEvent
+            );
+            mario.events.register(
+                gameData.EVENTS.JUMPING_RIGHT,
+                moveEvent
+            );
+            mario.events.register(
+                gameData.EVENTS.JUMPING_RIGHT,
+                copyIsolationEvent
+            );
+
+            mario.events.doEvent(gameData.EVENTS.STANDING_RIGHT);
+            mario.events.doEvent(gameData.EVENTS.JUMPING_RIGHT);
+            //link.events.doEvent(gameData.EVENTS.STANDING_RIGHT);
+
+        </script>
+    </body>
 </html>
