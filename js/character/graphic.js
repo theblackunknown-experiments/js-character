@@ -87,7 +87,7 @@ var imageManager = (function initializeImageManager(){
 /**
  * Constructor responsible for character's graphic setting
  * @param {Object} characterSkeleton - character model built by 'characterDataGenerator'
- * @param {Object} spritesMapCutting - properties are state's name of {Object} describing reference of a specific part of the image,
+ * @param {Object} mapSlicing - properties are state's name of {Object} describing reference of a specific part of the image,
  * which point to a character graphic. Index are corresponding state code
  * {
  *      {String} spriteType : 'single',
@@ -108,7 +108,7 @@ var imageManager = (function initializeImageManager(){
  *      }, ... ]
  * }
  */
-function characterVisualGenerator(characterSkeleton, spriteMap, spritesMapCutting) {
+function characterVisualGenerator(characterSkeleton, spriteMap, mapSlicing) {
 	'use strict';
 
 	/**
@@ -128,43 +128,30 @@ function characterVisualGenerator(characterSkeleton, spriteMap, spritesMapCuttin
 	 */
 	function initializeStateSpriteMapping() {
 		var mapping = { };
-		for (var stateCode in gameData.CHARACTER_STATES) {
-			//checking
-			gameUtilities.required(spritesMapCutting[gameData.CHARACTER_STATES[stateCode]],
-					'Following state is not include in the sprite map cutting : ' + stateCode);
-
-			mapping[stateCode] = {
-				mapLocation : spritesMapCutting[gameData.CHARACTER_STATES[stateCode]],
-				imageLoader : loadSprite
-			}
-		}
+                try {
+                    console.log('Initializing slicing mapping');
+                    for (var stateCode in gameData.CHARACTER_STATES) { if ( gameData.CHARACTER_STATES.hasOwnProperty(stateCode)) {
+                        console.log(
+                                'State name : ', stateCode,
+                                'State Value : ', gameData.CHARACTER_STATES[stateCode],
+                                'Corresponding slicing : ', mapSlicing[stateCode]
+                        );
+                        //checking
+                        mapping[stateCode] = mapSlicing[stateCode];
+                    }}
+                } catch(error) {
+                    throw new ReferenceError(
+                            'Following state is not include in the sprite map slicing : ' + stateCode);
+                }
 		return mapping;
 	}
 
-	/**
-	 * Load specific part of the sprite map as an image,
-	 * thus create the necessary rendered graphic for character's state.
-	 *
-	 * This loader is mean to be called only when the image is needed.
-	 *
-	 * TODO Explore caching strategy,
-	 * @param {Object} location - character's graphic corresponding rectangle in character map
-	 * {
-	 *      {Number} x : _abscissa position_,
-	 *      {Number} y : _ordinate position_,
-	 *      {Number} width : _graphic width_,
-	 *      {Number} height : _graphic height_
-	 * }
-	 */
-	function loadSprite(location) {
-		var characterSpriteMap = spriteMap,
-			spriteImage = imageManager.getImageSprite(characterSpriteMap,location);
-	}
-
-	/*=========================================================================
-	                                     ENHANCEMENT
-	  =========================================================================*/
-	//TODO Attach graphic handling, timer graphic update to basic character skeleton
+	characterSkeleton.extends({
+            graphic : {
+                spriteMap : spriteMap,
+                slicing : initializeStateSpriteMapping()
+            }
+        }, true);
 
 	return characterSkeleton;
 }
