@@ -4,6 +4,11 @@
         <title>Development Sandbox</title>
     </head>
     <body>
+        <div id='performance-board'>
+            <p><span id='canvas-fps'>-</span> fps</p>
+            <p>Rendering time : <span id='canvas-render-time'></span>s</p>
+            <p>Rendering uptime : <span id='canvas-render-uptime'></span>s</p>
+        </div>
         <canvas id="game-playground" width="800" height="600">
             <p>
             Your browser does not support canvas feature, please use a more recent browser
@@ -86,29 +91,35 @@
 
             var marioSpriteMapPath = 'images/mario-sprites-map.png',
             marioSlicing = {
-                DEAD : marioImages[6],
-                STANDING_RIGHT : marioImages[0],
-                MOVING_RIGHT : {
+                '0' : marioImages[6],
+                '1' : marioImages[0],
+                '2' : {
                     type : 'sequence',
+                    current : undefined,
+                    //FIXME FUCKING literal array which doesn't want to tell its length...
+                    size : 4,
                     sequence : [
-                    marioImages[1],
-                    marioImages[2],
-                    marioImages[3],
-                    marioImages[4]
+                        marioImages[1],
+                        marioImages[2],
+                        marioImages[3],
+                        marioImages[4]
                     ]
                 },
-                JUMPING_RIGHT : marioImages[5],
-                STANDING_LEFT : marioImages[8],
-                MOVING_LEFT : {
+                '3' : marioImages[5],
+                '-1' : marioImages[8],
+                '-2' : {
                     type : 'sequence',
+                    current : undefined,
+                    //FIXME FUCKING literal array which doesn't want to tell its length...
+                    size : 4,
                     sequence : [
-                    marioImages[9],
-                    marioImages[10],
-                    marioImages[11],
-                    marioImages[12]
+                        marioImages[9],
+                        marioImages[10],
+                        marioImages[11],
+                        marioImages[12]
                     ]
                 },
-                JUMPING_LEFT : marioImages[13]
+                '-3' : marioImages[13]
             };
 
             var mario = characterModelGenerator(parametersMario),

@@ -58,14 +58,7 @@ var gameUtilities = (function generalUtilities(window) {
         required(typeof extensionPoint == 'object',
                 'Extension must be an object');
 
-        console.log('Extending ', sourceObject, ' to ', extensionPoint, ' with deep copy ? ', needDeepCopy);
-
         for (var property in extensionPoint) {
-            console.log('Property name : ', property,
-                        'Property value : ', extensionPoint[property],
-                        'Own property ? ', extensionPoint.hasOwnProperty(property),
-                        'Need to go deeper ? ', ( needDeepCopy && (typeof extensionPoint[property] == 'object') )
-            );
             if (extensionPoint.hasOwnProperty(property)) {
                 if( needDeepCopy && (typeof extensionPoint[property] == 'object') ) {
                     sourceObject[property] = Object.create(null);

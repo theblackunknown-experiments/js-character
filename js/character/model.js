@@ -25,67 +25,67 @@
  *     }
  */
 function characterModelGenerator(initialParameters) {
-	'use strict';
+    'use strict';
 
-	/**
-	 * Simple initialize function,
-	 * create the described structure above based on game's events
-	 */
-	function initializeEventsHandlers() {
-		var handlers = [],
-			eventCode;
-		for (eventCode in gameData.EVENTS) {
-			handlers[gameData.EVENTS[eventCode]] = [];
-		}
+    /**
+     * Simple initialize function,
+     * create the described structure above based on game's events
+     */
+    function initializeEventsHandlers() {
+        var handlers = [],
+            eventCode;
+        for (eventCode in gameData.EVENTS) {
+            handlers[gameData.EVENTS[eventCode]] = [];
+        }
 
-		return handlers;
-	}
+        return handlers;
+    }
 
-	var defaults = {
-			position : {
-				x : 0,
-				y : 0
-			},
-			condition : {
-				life : 100
-			}
-		},
-		character = {
-			name : gameUtilities.required(initialParameters.name,
-						'A name must be provided for the creation of a character'),
-			type : gameUtilities.required(initialParameters.type,
-						'A character\'s type must be provided for the creation of a character'),
-			position : {
-				x : gameUtilities.getOrElse(initialParameters.position.x, defaults.position.x),
-				y : gameUtilities.getOrElse(initialParameters.position.y, defaults.position.y),
-				layer : gameUtilities.required(initialParameters.position.layer,
-						'A layer must be provided for the creation of a character')
-			},
-			condition : {
-				life : defaults.condition.life,
-				state : gameData.CHARACTER_STATES.NORMAL
-			},
-			inventory : {
-				leftHand : gameData.ITEMS.NONE,
-				rightHand : gameData.ITEMS.NONE,
-				magic : gameData.SPELLS.NONE
-			},
-			events : {
-				doEvent : handleEvent,
-				register : registerEventHandler,
-				unregister : unregisterEventHandler
-			}
-		},
-		eventHandlers = initializeEventsHandlers();
+    var defaults = {
+            position : {
+                        x : 0,
+                        y : 0
+                    },
+            condition : {
+                            life : 100
+                        }
+        },
+        character = {
+            name : gameUtilities.required(initialParameters.name,
+                           'A name must be provided for the creation of a character'),
+            type : gameUtilities.required(initialParameters.type,
+                    'A character\'s type must be provided for the creation of a character'),
+            position : {
+                x : gameUtilities.getOrElse(initialParameters.position.x, defaults.position.x),
+                y : gameUtilities.getOrElse(initialParameters.position.y, defaults.position.y),
+                layer : gameUtilities.required(initialParameters.position.layer,
+                        'A layer must be provided for the creation of a character')
+            },
+            condition : {
+                life : defaults.condition.life,
+                state : gameData.CHARACTER_STATES.MOVING_RIGHT
+            },
+            inventory : {
+                leftHand : gameData.ITEMS.NONE,
+                rightHand : gameData.ITEMS.NONE,
+                magic : gameData.SPELLS.NONE
+            },
+            events : {
+                doEvent : handleEvent,
+                register : registerEventHandler,
+                unregister : unregisterEventHandler
+            }
+        },
+        eventHandlers = initializeEventsHandlers();
 
-	/**
-	 * Handle the specified event and thus execute the handler's queue
-	 * @param {Number} event - target event to be handled
-	 */
-	function handleEvent(event) {
-		var cursor, length,
-			specificEventHandlers = eventHandlers[event],
-			characterCopy;
+    /**
+     * Handle the specified event and thus execute the handler's queue
+     * @param {Number} event - target event to be handled
+     */
+    function handleEvent(event) {
+        var cursor, length,
+            specificEventHandlers = eventHandlers[event],
+            characterCopy;
 
         /**
          * Compute change only if values differ
@@ -136,8 +136,8 @@ function characterModelGenerator(initialParameters) {
                     }),
                     state : computeChange(former.state, latter.state, function stateChange(newState){
                         return gameData.checker.isCharacterState(newState)
-                            ? newState
-                            : gameData.CHARACTER_STATES.BACK_TO_NORMAL;
+                             ? newState
+                             : gameData.CHARACTER_STATES.BACK_TO_NORMAL;
                     })
                 };
             }
@@ -162,8 +162,8 @@ function characterModelGenerator(initialParameters) {
                     rightHand : computeChange(former.rightHand, latter.rightHand, handChange),
                     magic : computeChange(former.magic, latter.magic, function spellChange(newSpell){
                         return gameData.checker.isSpell(newSpell)
-                            ? newSpell
-                            : gameData.SPELLS.NONE;
+                        ? newSpell
+                        : gameData.SPELLS.NONE;
                     })
                 };
             }
@@ -178,12 +178,12 @@ function characterModelGenerator(initialParameters) {
                 && characterCondition.life > 0;
         }
 
-		//checking
-		if (!gameData.checker.isEvent(event)) {
-			throw new TypeError('Given event is not a valid event : ' + event);
-		}
+        //checking
+        if (!gameData.checker.isEvent(event)) {
+            throw new TypeError('Given event is not a valid event : ' + event);
+        }
 
-		for (cursor = 0, length = specificEventHandlers.length; cursor < length; cursor++) {
+        for (cursor = 0, length = specificEventHandlers.length; cursor < length; cursor++) {
             //dump real character
             characterCopy = {
                 name : character.name,
@@ -204,7 +204,7 @@ function characterModelGenerator(initialParameters) {
                 }
             };
             //pass it to handler
-			specificEventHandlers[cursor](characterCopy);
+            specificEventHandlers[cursor](characterCopy);
             //compute differences
             character.position = computePositionChanges(character.position,characterCopy.position);
             character.condition = computeConditionChanges(character.condition,characterCopy.condition);
@@ -213,54 +213,55 @@ function characterModelGenerator(initialParameters) {
             //TODO Resolved here or by game engine ?
             if (!alive(character))
                 break;
-		}
-	}
+        }
+    }
 
-	/**
-	 * Register an handler to a specific event,
-	 * the handler will be queued, if not already present, to the existing list of handler
-	 * @param {Number} event - trigger event
-	 * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
-	 */
-	function registerEventHandler(event, handler) {
-		//checking
-		gameUtilities.required(event, 'Targeted event not specified : ' + event);
-		gameUtilities.required(handler, 'Event\'s handler not specified');
-		if (!gameData.checker.isEvent(event)) {
-			throw new TypeError('Given event is not a valid event : ' + event);
-		}
-		if (!gameData.checker.isHandler(handler)) {
-			throw new TypeError('Given handler is not a valid handler : ' + handler);
-		}
+    /**
+     * Register an handler to a specific event,
+     * the handler will be queued, if not already present, to the existing list of handler
+     * @param {Number} event - trigger event
+     * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
+     */
+    function registerEventHandler(event, handler) {
+        //checking
+        gameUtilities.required(event, 'Targeted event not specified : ' + event);
+        gameUtilities.required(handler, 'Event\'s handler not specified');
+        if (!gameData.checker.isEvent(event)) {
+            throw new TypeError('Given event is not a valid event : ' + event);
+        }
+        if (!gameData.checker.isHandler(handler)) {
+            throw new TypeError('Given handler is not a valid handler : ' + handler);
+        }
 
-		var targetedEventHandlers = eventHandlers[event];
-		if (!targetedEventHandlers.contains(handler)) {
-			targetedEventHandlers.push(handler);
-		}
-	}
+        console.debug('Caller is ', this);
+        var targetedEventHandlers = eventHandlers[event];
+        if (!targetedEventHandlers.contains(handler)) {
+            targetedEventHandlers.push(handler);
+        }
+    }
 
-	/**
-	 * Unregister an handler from a specific event,
-	 * the handler will be queued, if not already present, to the existing list of handler
-	 * @param {Number} event - trigger event
-	 * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
-	 */
-	function unregisterEventHandler(event, handler) {
-		//checking
-		gameUtilities.required(event, 'Targeted event not specified : ' + event);
-		gameUtilities.required(handler, 'Event\'s handler not specified');
-		if (!gameData.checker.isEvent(event)) {
-			throw new TypeError('Given event is not a valid event : ' + event);
-		}
-		if (!gameData.checker.isHandler(handler)) {
-			throw new TypeError('Given handler is not a valid handler : ' + handler);
-		}
+    /**
+     * Unregister an handler from a specific event,
+     * the handler will be queued, if not already present, to the existing list of handler
+     * @param {Number} event - trigger event
+     * @param {Function} handler - handler to execute, data passed to the handler is the whole character structure
+     */
+    function unregisterEventHandler(event, handler) {
+        //checking
+        gameUtilities.required(event, 'Targeted event not specified : ' + event);
+        gameUtilities.required(handler, 'Event\'s handler not specified');
+        if (!gameData.checker.isEvent(event)) {
+            throw new TypeError('Given event is not a valid event : ' + event);
+        }
+        if (!gameData.checker.isHandler(handler)) {
+            throw new TypeError('Given handler is not a valid handler : ' + handler);
+        }
 
-		var targetedEventHandlers = eventHandlers[event];
-		if (targetedEventHandlers.contains(handler)) {
-			targetedEventHandlers.remove(handler);
-		}
-	}
+        var targetedEventHandlers = eventHandlers[event];
+        if (targetedEventHandlers.contains(handler)) {
+            targetedEventHandlers.remove(handler);
+        }
+    }
 
-	return character;
-}
+        return character;
+    }
