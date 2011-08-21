@@ -162,6 +162,9 @@
             //register agent with the engine
             gameEngine.agents.register(mario);
 
+            //mozilla aurora hack because keydown binding doesn't work
+            mario.condition.state = gameData.CHARACTER_STATES.MOVING_RIGHT;
+
             //launch engine
             gameEngine.rendering.play();
 
