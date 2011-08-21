@@ -1,7 +1,7 @@
 /*=========================================================================
  CONSTANTS
  =========================================================================*/
-const canvasID = 'canvas',
+const canvasID = 'game-playground',
 		canvasContext = '2d',
 		imagesPath = 'images/',
 		characterParts = [
