@@ -63,7 +63,7 @@ function characterModelGenerator(initialParameters) {
             },
             condition : {
                 life : defaults.condition.life,
-                state : gameData.CHARACTER_STATES.MOVING_RIGHT
+                state : gameData.CHARACTER_STATES.STANDING_RIGHT
             },
             inventory : {
                 leftHand : gameData.ITEMS.NONE,

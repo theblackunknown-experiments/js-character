@@ -148,7 +148,7 @@ var gameEngine = (function initializeGameEngine(window){
         }
 
         var time0 = +new Date,
-            delay = 200;
+            delay = 80;
         
         if( performance.rendering.lastRender != undefined
             && time0 - performance.rendering.lastRender < delay) {

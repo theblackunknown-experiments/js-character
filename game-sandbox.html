@@ -9,6 +9,11 @@
             <p>Rendering time : <span id='canvas-render-time'></span>s</p>
             <p>Rendering uptime : <span id='canvas-render-uptime'></span>s</p>
         </div>
+        <div>
+            <p>
+                Press right or left arrow to test canvas interaction
+            </p>
+        </div>
         <canvas id="game-playground" width="800" height="600">
             <p>
             Your browser does not support canvas feature, please use a more recent browser
@@ -19,6 +24,8 @@
         <script src="js/character/model.js"></script>
         <script src="js/character/graphic.js"></script>
         <script src="js/character/engine.js"></script>
+        <!-- support for jQuery is not for the game but to ease the manipulation in the playground -->
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script>
             var parametersMario = {
                 name : 'mario',
@@ -124,52 +131,41 @@
 
             var mario = characterModelGenerator(parametersMario),
             visualMario = characterVisualGenerator(
-            mario,
-            marioSpriteMapPath,
-            marioSlicing
+                mario,
+                marioSpriteMapPath,
+                marioSlicing
             );
 
-            function drawMario() {
-                console.log('Section : ', marioMapLocations.STANDING_RIGHT);
-                for (
-                indexAbscissa = marioMapLocations.STANDING_RIGHT.sequence.length - 1;
-                indexAbscissa >= 0 ;
-                indexAbscissa--)
-                {
-                    console.log('Index : ', indexAbscissa);
-                    console.log('Segment : ', marioMapLocations.STANDING_RIGHT.sequence[indexAbscissa]);
-                    console.log('Image : ', marioMapImage);
-                    imageSegment = marioMapLocations.STANDING_RIGHT.sequence[indexAbscissa];
-                    //ctx.drawImage(marioMapImage, imageSegment.x, imageSegment.y, imageSegment.width, imageSegment.height, imageSegment.x, imageSegment.y, indexAbscissa + 10, 10);
-                    var abscissa = imageSegment.x,
-                    ordinate = imageSegment.y;
-                    ctx.drawImage(marioMapImage, abscissa, ordinate,16,28,indexAbscissa * 100, ordinate, 32,56);
+            //raw key events
+            $('body').keydown(function(event){
+                switch(event.keyCode){
+                    case 37://left
+                        mario.condition.state = gameData.CHARACTER_STATES.MOVING_LEFT;
+                        break;
+                    case 39://right
+                        mario.condition.state = gameData.CHARACTER_STATES.MOVING_RIGHT;
+                        break;
                 }
-            }
+            });
 
-            //load sprite map
-            var marioMapImage = new Image();
-            //marioMapImage.onload = drawMario;
-            marioMapImage.src = marioSpriteMapPath;
+            $('body').keyup(function(event){
+                switch(event.keyCode){
+                    case 37://left
+                        mario.condition.state = gameData.CHARACTER_STATES.STANDING_LEFT;
+                        break;
+                    case 39://right
+                        mario.condition.state = gameData.CHARACTER_STATES.STANDING_RIGHT;
+                        break;
+                }
+            });
 
-            //register some handlers 
-            //FIXME That design is sooooooooo bad !!!
-            mario.events.register(
-                gameData.EVENTS.STANDING_RIGHT,
-                probeEvent
-            );
-            mario.events.register(
-                gameData.EVENTS.JUMPING_RIGHT,
-                moveEvent
-            );
-            mario.events.register(
-                gameData.EVENTS.JUMPING_RIGHT,
-                copyIsolationEvent
-            );
+            //register agent with the engine
+            gameEngine.agents.register(mario);
 
-            mario.events.doEvent(gameData.EVENTS.STANDING_RIGHT);
-            mario.events.doEvent(gameData.EVENTS.JUMPING_RIGHT);
-            //link.events.doEvent(gameData.EVENTS.STANDING_RIGHT);
+            //launch engine
+            gameEngine.rendering.play();
+
+
 
         </script>
     </body>
